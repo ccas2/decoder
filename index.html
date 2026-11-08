@@ -1,6 +1,18 @@
 <!doctype html>
 <html lang="en" data-framework="javascript">
 
+<link rel="manifest" href="manifest.json">
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./sw.js')
+        .then(reg => console.log('Service Worker зарегистрирован!', reg))
+        .catch(err => console.err('Ошибка SW:', err));
+    });
+  }
+</script>
+
+  
 <head>
   <title>Cimbar Encoder</title>
   <meta charset="utf-8">
