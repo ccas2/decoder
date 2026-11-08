@@ -1,46 +1,50 @@
-const CACHE_NAME = 'cimbar-decoder-cache-v1';
 
-// Список файлов для сохранения в память устройства
-const ASSETS = [
-  './',
-  './index.html',
-  './cimbar_receiver.js',
-  './cimbar_receiver.wasm',
-  './manifest.json',
-  './icon.png'
+var _cacheName = 'cimbar-js-v2026-08-21T2336';
+var _cacheFiles = [
+  '/',
+  '/index.html',
+  '/index.html?ww=1',
+  '/cimbar_js.2026-08-21T2336.js',
+  '/cimbar_js.2026-08-21T2336.wasm',
+  '/favicon.ico',
+  '/icon-192x192.png',
+  '/icon-512x512.png',
+  '/main.2026-08-21T2336.js',
+  '/pwa.2026-08-21T2336.json'
 ];
 
-// Установка Service Worker и кэширование файлов
-self.addEventListener('install', (event) => {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(ASSETS);
+// fetch files
+self.addEventListener('install', function (e) {
+  e.waitUntil(
+    caches.open(_cacheName).then(function (cache) {
+      return cache.addAll(_cacheFiles);
     })
   );
   self.skipWaiting();
 });
 
-// Активация и удаление старого кэша, если вы обновите файлы
-self.addEventListener('activate', (event) => {
-  event.waitUntil(
-    caches.keys().then((cacheNames) => {
+// serve from cache
+self.addEventListener('fetch', function (e) {
+  e.respondWith(
+    caches.match(e.request, { ignoreSearch: true }).then(function (response) {
+      return response || fetch(e.request);
+    })
+  );
+});
+
+// clean old caches
+self.addEventListener('activate', function (e) {
+  e.waitUntil(
+    caches.keys().then(function (names) {
       return Promise.all(
-        cacheNames.map((cache) => {
-          if (cache !== CACHE_NAME) {
-            return caches.delete(cache);
+        names.map(function (cn) {
+          if (cn !== _cacheName) {
+            return caches.delete(cn);
           }
         })
       );
-    })
-  );
-  self.clients.claim();
-});
-
-// Перехват запросов: если интернета нет, файлы берутся из кэша
-self.addEventListener('fetch', (event) => {
-  event.respondWith(
-    caches.match(event.request).then((cachedResponse) => {
-      return cachedResponse || fetch(event.request);
+    }).then(function () {
+      return self.clients.claim(); 
     })
   );
 });
